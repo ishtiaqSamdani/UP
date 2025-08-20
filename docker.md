@@ -1,4 +1,4 @@
-# Docker Concepts and Best Practices
+# Docker
 
 ---
 
