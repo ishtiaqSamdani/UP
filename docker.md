@@ -7,17 +7,20 @@
 * **Multi-Stage Builds:** Use multiple `FROM` instructions to separate build-time dependencies from the final runtime image.
 
     ```dockerfile
-    # Stage 1: Build the application
-    FROM golang:1.19 AS builder
+    # Stage 1: Node environment to build the React app
+    FROM node:22-alpine AS build
     WORKDIR /app
     COPY . .
-    RUN go build -o my-app .
+    RUN npm install
+    RUN npm run build
+    
+    # Stage 2: Serve the built app via Nginx
+    FROM nginx:alpine
+    COPY nginx.conf /etc/nginx/conf.d/default.conf
+    COPY --from=build /app/build /usr/share/nginx/html/
+    EXPOSE 80
+    CMD ["nginx", "-g", "daemon off;"]
 
-    # Stage 2: Create the final, lean image
-    FROM alpine:latest
-    WORKDIR /app
-    COPY --from=builder /app/my-app .
-    CMD ["./my-app"]
     ```
 
 * **Caching Layers:** Order instructions from least to most frequently changing to leverage Docker's build cache effectively.
